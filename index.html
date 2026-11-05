@@ -65,6 +65,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
             width: 100%;
             margin-bottom: 20px;
         }
@@ -77,28 +78,90 @@
         th, td { border: 1px solid #334155; }
         th { background-color: #0f172a; font-size: 0.8rem; font-weight: 600; }
 
-        .tracker-table { table-layout: fixed; min-width: 800px; }
-        .tracker-table th, .tracker-table td { padding: 4px 2px; height: 24px; position: relative; }
-        .tracker-table th:first-child, .tracker-table td:first-child { width: 70px; word-wrap: break-word; white-space: normal; font-size: 0.75rem; padding: 4px; }
+        .tracker-table { table-layout: fixed; min-width: 780px; }
+        .tracker-table th, .tracker-table td { padding: 4px 3px; height: 26px; position: relative; }
+        .tracker-table thead th { padding: 8px 4px; height: auto; vertical-align: middle; overflow: hidden; }
+        .tracker-table th:first-child, .tracker-table td:first-child {
+            width: 88px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+            font-size: 0.72rem;
+            padding: 6px 4px;
+            line-height: 1.25;
+        }
+        .tracker-table thead th:first-child {
+            font-size: 0.7rem;
+            line-height: 1.2;
+        }
+
+        /* Sticky header */
+        .tracker-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background-color: #0f172a;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+        .tracker-table thead th:first-child { z-index: 6; }
         
-        .records-table { table-layout: auto; min-width: 600px; width: 100%; margin-bottom: 20px; }
-        .records-table th, .records-table td { padding: 10px 15px; height: auto; font-size: 0.9rem; }
+        .records-table { table-layout: auto; min-width: 100%; width: 100%; margin-bottom: 20px; }
+        .records-table th, .records-table td { padding: 10px 12px; height: auto; font-size: 0.9rem; }
         .records-table td:nth-child(1) { text-align: left; font-weight: bold; color: #f8fafc; }
         .records-table th { font-size: 0.95rem; background-color: #1e3a8a; color: white; }
+        .records-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background-color: #1e3a8a;
+        }
 
-        .manager-name { display: block; font-size: 0.7rem; font-weight: bold; margin-bottom: 2px; }
+        .row-current-total {
+            background-color: #1e3a5f;
+            color: #93c5fd;
+            font-weight: bold;
+            font-size: 0.75rem;
+        }
+        .row-current-total .val { color: #93c5fd; font-weight: bold; }
+        .row-last-season {
+            background-color: #1e293b;
+            color: #94a3b8;
+            font-size: 0.7rem;
+        }
+        .row-last-season .val { color: #94a3b8; font-weight: 500; }
+        .last-season-label, .current-total-label { font-size: 0.65rem; color: #64748b; }
+        .current-total-label { color: #93c5fd; }
+
+        @media (max-width: 700px) {
+            body { padding: 6px; }
+            .tabs-container { gap: 3px; padding: 4px; }
+            .tab-btn { padding: 6px 10px; font-size: 0.8rem; }
+            .tracker-table { min-width: 680px; }
+            .tracker-table th, .tracker-table td { padding: 3px 2px; font-size: 0.7rem; }
+            .tracker-table th:first-child, .tracker-table td:first-child { width: 72px; font-size: 0.62rem; }
+            .manager-name { font-size: 0.6rem; }
+            .tracker-stats { font-size: 0.52rem; }
+            .manager-rank { width: 18px; height: 18px; line-height: 18px; font-size: 0.65rem; }
+            .records-table th, .records-table td { padding: 8px 6px; font-size: 0.8rem; }
+            input { max-width: 32px; font-size: 0.75rem; }
+        }
+
+        .manager-name { display: block; font-size: 0.7rem; font-weight: bold; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; }
         .tracker-stats { 
-            font-size: 0.62rem; 
+            font-size: 0.58rem; 
             color: #cbd5e1; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             gap: 1px;
             margin-top: 2px;
+            margin-bottom: 1px;
             line-height: 1.2;
+            max-width: 100%;
+            overflow: hidden;
         }
-        .stat-medals { color: #facc15; white-space: nowrap; }
-        .stat-gw { color: #94a3b8; white-space: nowrap; }
+        .stat-medals { color: #facc15; white-space: nowrap; letter-spacing: -0.3px; }
+        .stat-gw { color: #94a3b8; white-space: nowrap; letter-spacing: -0.2px; }
         .stat-up { color: #4ade80; }
         .stat-down { color: #f87171; }
         
@@ -119,9 +182,33 @@
         .motm-gold { background-color: rgba(234, 179, 8, 0.15); box-shadow: inset 0 0 0 2px #eab308 !important; color: #fde047; }
         .motm-silver { background-color: rgba(226, 232, 240, 0.15); box-shadow: inset 0 0 0 2px #94a3b8 !important; color: #f8fafc; }
         .motm-bronze { background-color: rgba(217, 119, 6, 0.2); box-shadow: inset 0 0 0 2px #d97706 !important; color: #fbbf24; }
-        .motm-absolute-high { background-color: rgba(234, 179, 8, 0.35); box-shadow: inset 0 0 0 2px #facc15 !important; color: #fef08a; font-weight: bold; }
+        .motm-absolute-high {
+            background-color: rgba(250, 204, 21, 0.45) !important;
+            box-shadow: inset 0 0 0 3px #facc15, 0 0 12px rgba(250, 204, 21, 0.4) !important;
+            color: #fef08a !important;
+            font-weight: bold;
+        }
+        .motm-absolute-high .val { color: #fef08a !important; font-weight: bold; font-size: 1.05em; }
         .motm-lowest { color: #f87171; }
         .motm-absolute-low { background-color: rgba(220, 38, 38, 0.25); box-shadow: inset 0 0 0 2px #ef4444 !important; color: #fca5a5; }
+        .row-total { background-color: #0f172a; font-weight: bold; color: #e2e8f0; border-top: 2px solid #3b82f6; }
+        .row-total .val { font-weight: bold; color: #f8fafc; }
+        .row-form { background-color: #172554; color: #bfdbfe; font-size: 0.75rem; }
+        .form-cell { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 4px 2px; }
+        .form-total { font-weight: bold; font-size: 0.8rem; color: #e2e8f0; }
+        .form-bar-track {
+            width: 80%;
+            max-width: 48px;
+            height: 6px;
+            background: #334155;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .form-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.2s ease;
+        }
         
         .gw-high input, .gw-absolute-high input, .gw-high .val, .gw-absolute-high .val { color: #4ade80 !important; font-weight: bold; }
         .gw-low input, .gw-absolute-low input, .gw-low .val, .gw-absolute-low .val { color: #f87171 !important; font-weight: bold; }
@@ -331,7 +418,7 @@
         // --- Season Configurations ---
         const configs = {
             '2627': {
-                title: "Live Tracker 26/27",
+                title: "No Ali's Club 26/27",
                 managers: ["Le Saux Solid Crew", "CrazyNdlovu", "Torp of the League", "Schrute Farms F.C.", "Papa Lloyd's Wives", "Team Nog", "Aston Thrillerus", "Wales"],
                 boundaries: [3, 6, 9, 13, 20, 23, 27, 30, 34, 38], // Standard template
                 type: 'full', prefill: data2627, readonly: true, includeInRecords: false
@@ -417,6 +504,8 @@
                 let table = document.createElement('table');
                 table.className = 'tracker-table';
                 table.id = `table-${this.id}`;
+                // Wider table when more managers so medal counts don't collide
+                table.style.minWidth = Math.max(780, 90 + this.managersCount * 88) + 'px';
 
                 let thead = document.createElement('thead');
                 let trHead = document.createElement('tr');
@@ -442,6 +531,22 @@
                     `<td id="avg-${this.id}-${col}"><div class="cell-wrapper"><span class="val">-</span></div></td>`
                 ).join('');
                 tbody.appendChild(trAvg);
+
+                // Form row (live season only) – last 4 GWs total + colour bar
+                if (this.id === '2627') {
+                    let trForm = document.createElement('tr');
+                    trForm.className = 'row-form';
+                    trForm.id = `form-row-${this.id}`;
+                    trForm.innerHTML = `<td>Form<br><span style="font-size:0.65em;opacity:0.8;">(last 4)</span></td>` + Array(this.managersCount).fill(0).map((_, col) =>
+                        `<td id="form-${this.id}-${col}">
+                            <div class="form-cell">
+                                <span class="form-total">-</span>
+                                <div class="form-bar-track"><div class="form-bar-fill" style="width:0%;background:#64748b;"></div></div>
+                            </div>
+                        </td>`
+                    ).join('');
+                    tbody.appendChild(trForm);
+                }
                 
                 let inputClasses = 'cell-input' + (this.config.readonly ? ' readonly-mode' : '');
                 let readonlyAttr = this.config.readonly ? 'readonly tabindex="-1"' : '';
@@ -470,6 +575,15 @@
                     
                     currentGw = endGw + 1;
                 });
+
+                // Total points row at bottom
+                let trTotal = document.createElement('tr');
+                trTotal.className = 'row-total';
+                trTotal.innerHTML = `<td>Total</td>` + Array(this.managersCount).fill(0).map((_, col) =>
+                    `<td id="total-${this.id}-${col}"><div class="cell-wrapper"><span class="val">-</span></div></td>`
+                ).join('');
+                tbody.appendChild(trTotal);
+
                 table.appendChild(tbody);
                 tableContainer.appendChild(table);
                 container.appendChild(tableContainer);
@@ -543,6 +657,31 @@
                     });
                 });
 
+                // Absolute highest / lowest GW score across the whole season
+                let allGwScores = [];
+                table.querySelectorAll('.gw-row').forEach(row => {
+                    row.querySelectorAll('.cell-input').forEach(input => {
+                        const v = parseFloat(input.value);
+                        if (!isNaN(v) && v !== 0) allGwScores.push(v);
+                    });
+                });
+                if (allGwScores.length > 1) {
+                    const absMax = Math.max(...allGwScores);
+                    const absMin = Math.min(...allGwScores);
+                    table.querySelectorAll('.gw-row').forEach(row => {
+                        row.querySelectorAll('.cell-input').forEach(input => {
+                            const v = parseFloat(input.value);
+                            if (isNaN(v) || v === 0) return;
+                            const td = input.parentElement.parentElement;
+                            if (v === absMax) {
+                                td.classList.add('gw-absolute-high');
+                            } else if (v === absMin) {
+                                td.classList.add('gw-absolute-low');
+                            }
+                        });
+                    });
+                }
+
                 // Update Averages and Ranks
                 let validSums = gwSums.filter(s => s > 0);
                 let sortedUniqueSums = [...new Set(validSums)].sort((a,b) => b - a);
@@ -562,6 +701,60 @@
 
                     let avgTd = document.getElementById(`avg-${this.id}-${col}`);
                     if (gwCounts[col] > 0) avgTd.querySelector('.val').innerText = (gwSums[col] / gwCounts[col]).toFixed(2);
+
+                    let totalTd = document.getElementById(`total-${this.id}-${col}`);
+                    if (totalTd) totalTd.querySelector('.val').innerText = gwSums[col] > 0 ? gwSums[col] : '-';
+                }
+
+                // Form (last 4 GWs) – live season only
+                if (this.id === '2627') {
+                    let playedGws = [];
+                    for (let g = 1; g <= 38; g++) {
+                        if (gwRowsData[g] && gwRowsData[g].some(v => !isNaN(v) && v !== 0)) playedGws.push(g);
+                    }
+                    const last4 = playedGws.slice(-4);
+                    const formTotals = Array(this.managersCount).fill(0);
+                    last4.forEach(g => {
+                        const row = gwRowsData[g];
+                        if (!row) return;
+                        row.forEach((v, c) => { if (!isNaN(v)) formTotals[c] += v; });
+                    });
+                    const validForm = formTotals.filter(t => t > 0);
+                    const maxForm = validForm.length ? Math.max(...validForm) : 1;
+                    const minForm = validForm.length ? Math.min(...validForm) : 0;
+                    // Rank form totals (1 = best)
+                    const sortedForm = [...new Set(validForm)].sort((a, b) => b - a);
+
+                    for (let col = 0; col < this.managersCount; col++) {
+                        const cell = document.getElementById(`form-${this.id}-${col}`);
+                        if (!cell) continue;
+                        const totalEl = cell.querySelector('.form-total');
+                        const bar = cell.querySelector('.form-bar-fill');
+                        const t = formTotals[col];
+                        if (!last4.length || t === 0) {
+                            totalEl.innerText = '-';
+                            bar.style.width = '0%';
+                            bar.style.background = '#64748b';
+                            continue;
+                        }
+                        totalEl.innerText = t;
+                        // Bar width relative to best form
+                        const pct = maxForm > 0 ? Math.round((t / maxForm) * 100) : 0;
+                        bar.style.width = pct + '%';
+                        // Colour by rank
+                        const rank = sortedForm.indexOf(t) + 1;
+                        const n = sortedForm.length;
+                        let color = '#94a3b8';
+                        if (n <= 1) color = '#4ade80';
+                        else if (rank === 1) color = '#22c55e';
+                        else if (rank === 2) color = '#4ade80';
+                        else if (rank === n) color = '#ef4444';
+                        else if (rank === n - 1) color = '#f97316';
+                        else if (rank <= Math.ceil(n / 2)) color = '#a3e635';
+                        else color = '#fbbf24';
+                        bar.style.background = color;
+                        totalEl.style.color = color;
+                    }
                 }
 
                 // Months
@@ -594,12 +787,29 @@
                             } else if (sum === sortedM[2]) {
                                 td.className = 'motm-bronze'; iconSpan.innerText = '🥉';
                                 this.allTimeData[col].bronzes++;
-                            } else if (sum === Math.min(...validMSums) && validMSums.length > 1) {
-                                td.className = 'motm-lowest'; iconSpan.innerText = '▼';
                             }
                         }
                     });
                 });
+
+                // Absolute highest / lowest monthly total across the whole season
+                let allMonthScores = [];
+                this.config.boundaries.forEach((_, idx) => {
+                    for (let col = 0; col < this.managersCount; col++) {
+                        const td = document.getElementById(`mon-${this.id}-${idx}-${col}`);
+                        if (!td) continue;
+                        const v = parseFloat(td.querySelector('.val')?.innerText);
+                        if (!isNaN(v) && v > 0) allMonthScores.push({ td, v });
+                    }
+                });
+                if (allMonthScores.length > 1) {
+                    const absMax = Math.max(...allMonthScores.map(x => x.v));
+                    const absMin = Math.min(...allMonthScores.map(x => x.v));
+                    allMonthScores.forEach(({ td, v }) => {
+                        if (v === absMax) td.classList.add('motm-absolute-high');
+                        else if (v === absMin) td.classList.add('motm-absolute-low');
+                    });
+                }
 
                 // Populate per-manager stats under the name (GW highs/lows + monthly medals)
                 for (let col = 0; col < this.managersCount; col++) {
@@ -610,6 +820,100 @@
                             <div class="stat-gw"><span class="stat-up">▲${d.gwHighs}</span> <span class="stat-down">▼${d.gwLows}</span></div>
                             <div class="stat-medals">🥇${d.golds} 🥈${d.silvers} 🥉${d.bronzes}</div>
                         `;
+                    }
+                }
+
+                // 26/27 → show point difference vs same stage last season (25/26)
+                // Row is inserted dynamically right under the latest GW that has data
+                if (this.id === '2627') {
+                    let playedGws = 0;
+                    for (let g = 1; g <= 38; g++) {
+                        if (gwRowsData[g] && gwRowsData[g].some(v => !isNaN(v) && v !== 0)) playedGws = g;
+                        else if (playedGws > 0) break;
+                    }
+
+                    // Remove any existing comparison rows
+                    ['last-season-row', 'champ-row'].forEach(prefix => {
+                        const el = document.getElementById(`${prefix}-${this.id}`);
+                        if (el) el.remove();
+                    });
+
+                    if (playedGws > 0) {
+                        const gwRow = table.querySelector(`tr.gw-row[data-gw="${playedGws}"]`);
+                        if (gwRow && data2526) {
+                            // Helper to format +/- difference
+                            const setDiff = (valSpan, thisSum, compareSum) => {
+                                const diff = thisSum - compareSum;
+                                if (diff > 0) {
+                                    valSpan.innerText = `+${diff}`;
+                                    valSpan.style.color = '#4ade80';
+                                    valSpan.style.fontWeight = 'bold';
+                                } else if (diff < 0) {
+                                    valSpan.innerText = `${diff}`;
+                                    valSpan.style.color = '#f87171';
+                                    valSpan.style.fontWeight = 'bold';
+                                } else {
+                                    valSpan.innerText = '0';
+                                    valSpan.style.color = '#94a3b8';
+                                    valSpan.style.fontWeight = '500';
+                                }
+                            };
+
+                            // --- Row 1: vs own score last season ---
+                            const trLS = document.createElement('tr');
+                            trLS.className = 'row-last-season';
+                            trLS.id = `last-season-row-${this.id}`;
+                            trLS.innerHTML = `<td><span class="last-season-label">vs 25/26 after ${playedGws} GW${playedGws > 1 ? 's' : ''}</span></td>` +
+                                Array(this.managersCount).fill(0).map((_, col) =>
+                                    `<td id="ls-${this.id}-${col}"><div class="cell-wrapper"><span class="val">-</span></div></td>`
+                                ).join('');
+                            gwRow.insertAdjacentElement('afterend', trLS);
+
+                            // 25/26 managers: Ali, Hoops, Sant, Chris, Mitch, Nick, Noggo, Max
+                            const mapTo2526 = {
+                                'CRB': 3, 'Max': 7, 'Sant': 2, 'Hoops': 1,
+                                'Nick': 5, 'Noggo': 6, 'Mitch': 4, 'Ed': null
+                            };
+                            for (let col = 0; col < this.managersCount; col++) {
+                                const td = document.getElementById(`ls-${this.id}-${col}`);
+                                if (!td) continue;
+                                const valSpan = td.querySelector('.val');
+                                const srcCol = mapTo2526[this.allTimeData[col].name];
+                                if (srcCol == null) {
+                                    valSpan.innerText = '—';
+                                    valSpan.style.color = '#64748b';
+                                    continue;
+                                }
+                                let lastSum = 0;
+                                for (let g = 0; g < playedGws && g < data2526.length; g++) {
+                                    const v = data2526[g][srcCol];
+                                    if (!isNaN(v)) lastSum += v;
+                                }
+                                setDiff(valSpan, gwSums[col] || 0, lastSum);
+                            }
+
+                            // --- Row 2: vs last year's champion (Ali) at same stage ---
+                            // Ali is column 0 in data2526
+                            let champSum = 0;
+                            for (let g = 0; g < playedGws && g < data2526.length; g++) {
+                                const v = data2526[g][0];
+                                if (!isNaN(v)) champSum += v;
+                            }
+                            const trChamp = document.createElement('tr');
+                            trChamp.className = 'row-last-season';
+                            trChamp.id = `champ-row-${this.id}`;
+                            trChamp.innerHTML = `<td><span class="last-season-label">vs 25/26 champ (Ali)</span></td>` +
+                                Array(this.managersCount).fill(0).map((_, col) =>
+                                    `<td id="champ-${this.id}-${col}"><div class="cell-wrapper"><span class="val">-</span></div></td>`
+                                ).join('');
+                            trLS.insertAdjacentElement('afterend', trChamp);
+
+                            for (let col = 0; col < this.managersCount; col++) {
+                                const td = document.getElementById(`champ-${this.id}-${col}`);
+                                if (!td) continue;
+                                setDiff(td.querySelector('.val'), gwSums[col] || 0, champSum);
+                            }
+                        }
                     }
                 }
             }
@@ -635,6 +939,7 @@
                 tableContainer.className = 'table-container';
                 let table = document.createElement('table');
                 table.className = 'tracker-table';
+                table.style.minWidth = Math.max(780, 90 + this.managersCount * 88) + 'px';
 
                 let thead = document.createElement('thead');
                 let trHead = document.createElement('tr');
@@ -664,16 +969,19 @@
                     tbody.appendChild(trMon);
                 }
 
-                // Final Total row (uses official season totals when provided, e.g. 19/20)
-                if (this.config.finalTotals) {
-                    let trFinal = document.createElement('tr');
-                    trFinal.className = 'row-average';
-                    trFinal.innerHTML = `<td>Final Total</td>` + Array(this.managersCount).fill(0).map((_, col) => {
-                        let val = this.config.finalTotals[col] != null ? this.config.finalTotals[col] : '-';
-                        return `<td id="final-${this.id}-${col}"><div class="cell-wrapper"><span class="val" style="font-weight:bold;">${val}</span></div></td>`;
-                    }).join('');
-                    tbody.appendChild(trFinal);
-                }
+                // Total row (official finals when available, otherwise summed monthly data)
+                let trFinal = document.createElement('tr');
+                trFinal.className = 'row-total';
+                trFinal.innerHTML = `<td>Total</td>` + Array(this.managersCount).fill(0).map((_, col) => {
+                    let val = '-';
+                    if (this.config.finalTotals && this.config.finalTotals[col] != null) {
+                        val = this.config.finalTotals[col];
+                    } else if (this.config.monthlyData) {
+                        val = this.config.monthlyData.reduce((s, row) => s + (row[col] || 0), 0) || '-';
+                    }
+                    return `<td id="final-${this.id}-${col}"><div class="cell-wrapper"><span class="val">${val}</span></div></td>`;
+                }).join('');
+                tbody.appendChild(trFinal);
 
                 table.appendChild(tbody);
                 tableContainer.appendChild(table);
@@ -708,9 +1016,26 @@
                             if (val === sortedM[0]) { td.className = 'motm-gold'; iconSpan.innerText = '🥇'; this.allTimeData[col].golds++; }
                             else if (val === sortedM[1]) { td.className = 'motm-silver'; iconSpan.innerText = '🥈'; this.allTimeData[col].silvers++; }
                             else if (val === sortedM[2]) { td.className = 'motm-bronze'; iconSpan.innerText = '🥉'; this.allTimeData[col].bronzes++; }
-                            else if (val === Math.min(...valid) && valid.length > 1) { td.className = 'motm-lowest'; iconSpan.innerText = '▼'; }
                         });
                     });
+
+                    // Absolute highest / lowest monthly score across the season
+                    let allScores = [];
+                    this.config.monthlyData.forEach((row, idx) => {
+                        row.forEach((val, col) => {
+                            if (!(val > 0)) return;
+                            const td = document.getElementById(`mon-${this.id}-${idx}-${col}`);
+                            if (td) allScores.push({ td, val });
+                        });
+                    });
+                    if (allScores.length > 1) {
+                        const absMax = Math.max(...allScores.map(x => x.val));
+                        const absMin = Math.min(...allScores.map(x => x.val));
+                        allScores.forEach(({ td, val }) => {
+                            if (val === absMax) td.classList.add('motm-absolute-high');
+                            else if (val === absMin) td.classList.add('motm-absolute-low');
+                        });
+                    }
                 }
 
                 // Prefer official final totals when available (e.g. 19/20), otherwise use summed monthly data
@@ -886,28 +1211,150 @@
             renderSingleSeasonRecords();
         }
 
-        // --- Single Season Records (editable) ---
-        const defaultSingleSeasonRecords = [
-            { record: "Highest GW", holder: "Noggo, Mitch", score: "103", season: "21/22, 23/24" },
-            { record: "Lowest GW", holder: "Mitch", score: "5", season: "20/21" },
-            { record: "Most GW Wins", holder: "Mitch", score: "12", season: "22/23" },
-            { record: "Most GW Losses", holder: "Jo", score: "11", season: "22/23" },
-            { record: "Least GW Wins", holder: "Max, Hoops, Nick, Jo, Max", score: "1", season: "All 22/23, 23/24" },
+        // --- Single Season Records (auto-calculated where possible) ---
+        // Manual-only records (no GW data available for these)
+        const manualSingleSeasonRecords = [
             { record: "Invincibles", holder: "CRB", score: "0", season: "22/23" },
-            { record: "Highest MoTM", holder: "Noggo", score: "351", season: "22/23" },
-            { record: "Lowest MoTM", holder: "Hoops", score: "37", season: "22/23" },
-            { record: "Most MoTM", holder: "Mitch, Ali", score: "4", season: "22/23, 23/24" },
             { record: "Most Transfers", holder: "Ali", score: "233", season: "25/26" },
-            { record: "Least Transfers", holder: "Rich", score: "1", season: "22/23" },
-            { record: "Highest Total", holder: "Mitch", score: "1866", season: "22/23" },
-            { record: "Lowest Total", holder: "Mitch", score: "952", season: "19/20" }
+            { record: "Least Transfers", holder: "Rich", score: "1", season: "22/23" }
         ];
+
+        function computeSingleSeasonRecords() {
+            // Scan all full seasons that have GW-by-GW data
+            let highestGW = { score: -Infinity, holders: [], seasons: [] };
+            let lowestGW = { score: Infinity, holders: [], seasons: [] };
+            let mostWins = { score: -1, holders: [], seasons: [] };
+            let mostLosses = { score: -1, holders: [], seasons: [] };
+            let leastWins = { score: Infinity, holders: [], seasons: [] };
+            let highestTotal = { score: -Infinity, holders: [], seasons: [] };
+            let lowestTotal = { score: Infinity, holders: [], seasons: [] };
+            let highestMoTM = { score: -Infinity, holders: [], seasons: [] };
+            let lowestMoTM = { score: Infinity, holders: [], seasons: [] };
+            let mostMoTM = { score: -1, holders: [], seasons: [] };
+
+            const seasonLabel = { '2021':'20/21','2122':'21/22','2223':'22/23','2324':'23/24','2425':'24/25','2526':'25/26' };
+
+            Object.keys(configs).forEach(id => {
+                const cfg = configs[id];
+                if (cfg.type !== 'full' || !cfg.prefill || !cfg.includeInRecords) return;
+                const data = cfg.prefill;
+                const mgrs = cfg.managers.map(normalizeName);
+                const n = mgrs.length;
+                const label = seasonLabel[id] || id;
+
+                // Per-manager season stats
+                const totals = Array(n).fill(0);
+                const wins = Array(n).fill(0);
+                const losses = Array(n).fill(0);
+
+                data.forEach(row => {
+                    // Ignore empty / all-zero weeks (not played)
+                    const valid = row.filter(v => !isNaN(v) && v !== 0);
+                    if (valid.length < 2) return;
+                    const mx = Math.max(...valid);
+                    const mn = Math.min(...valid);
+                    row.forEach((v, c) => {
+                        if (isNaN(v) || v === 0) return;
+                        totals[c] += v;
+                        if (v === mx) wins[c]++;
+                        if (v === mn) losses[c]++;
+                        if (v > highestGW.score) { highestGW = { score: v, holders: [mgrs[c]], seasons: [label] }; }
+                        else if (v === highestGW.score) {
+                            if (!highestGW.holders.includes(mgrs[c])) highestGW.holders.push(mgrs[c]);
+                            if (!highestGW.seasons.includes(label)) highestGW.seasons.push(label);
+                        }
+                        if (v < lowestGW.score) { lowestGW = { score: v, holders: [mgrs[c]], seasons: [label] }; }
+                        else if (v === lowestGW.score) {
+                            if (!lowestGW.holders.includes(mgrs[c])) lowestGW.holders.push(mgrs[c]);
+                            if (!lowestGW.seasons.includes(label)) lowestGW.seasons.push(label);
+                        }
+                    });
+                });
+
+                // Totals
+                totals.forEach((t, c) => {
+                    if (t > highestTotal.score) highestTotal = { score: t, holders: [mgrs[c]], seasons: [label] };
+                    else if (t === highestTotal.score) { highestTotal.holders.push(mgrs[c]); if (!highestTotal.seasons.includes(label)) highestTotal.seasons.push(label); }
+                    if (t > 0 && t < lowestTotal.score) lowestTotal = { score: t, holders: [mgrs[c]], seasons: [label] };
+                    else if (t === lowestTotal.score) { lowestTotal.holders.push(mgrs[c]); if (!lowestTotal.seasons.includes(label)) lowestTotal.seasons.push(label); }
+                });
+
+                // Wins / Losses in this season
+                wins.forEach((w, c) => {
+                    if (w > mostWins.score) mostWins = { score: w, holders: [mgrs[c]], seasons: [label] };
+                    else if (w === mostWins.score) { mostWins.holders.push(mgrs[c]); if (!mostWins.seasons.includes(label)) mostWins.seasons.push(label); }
+                    if (w < leastWins.score) leastWins = { score: w, holders: [mgrs[c]], seasons: [label] };
+                    else if (w === leastWins.score) { leastWins.holders.push(mgrs[c]); if (!leastWins.seasons.includes(label)) leastWins.seasons.push(label); }
+                });
+                losses.forEach((l, c) => {
+                    if (l > mostLosses.score) mostLosses = { score: l, holders: [mgrs[c]], seasons: [label] };
+                    else if (l === mostLosses.score) { mostLosses.holders.push(mgrs[c]); if (!mostLosses.seasons.includes(label)) mostLosses.seasons.push(label); }
+                });
+
+                // Monthly totals (MoTM)
+                let currentGw = 1;
+                const golds = Array(n).fill(0);
+                cfg.boundaries.forEach(endGw => {
+                    const mSums = Array(n).fill(0);
+                    for (let g = currentGw; g <= endGw; g++) {
+                        if (data[g-1]) data[g-1].forEach((v, c) => { if (!isNaN(v)) mSums[c] += v; });
+                    }
+                    currentGw = endGw + 1;
+                    const valid = mSums.filter(v => v > 0);
+                    if (!valid.length) return;
+                    const sorted = [...new Set(valid)].sort((a,b) => b-a);
+                    mSums.forEach((sum, c) => {
+                        if (sum <= 0) return;
+                        if (sum > highestMoTM.score) highestMoTM = { score: sum, holders: [mgrs[c]], seasons: [label] };
+                        else if (sum === highestMoTM.score) { highestMoTM.holders.push(mgrs[c]); if (!highestMoTM.seasons.includes(label)) highestMoTM.seasons.push(label); }
+                        if (sum < lowestMoTM.score) lowestMoTM = { score: sum, holders: [mgrs[c]], seasons: [label] };
+                        else if (sum === lowestMoTM.score) { lowestMoTM.holders.push(mgrs[c]); if (!lowestMoTM.seasons.includes(label)) lowestMoTM.seasons.push(label); }
+                        if (sum === sorted[0]) golds[c]++;
+                    });
+                });
+                golds.forEach((g, c) => {
+                    if (g > mostMoTM.score) mostMoTM = { score: g, holders: [mgrs[c]], seasons: [label] };
+                    else if (g === mostMoTM.score) { mostMoTM.holders.push(mgrs[c]); if (!mostMoTM.seasons.includes(label)) mostMoTM.seasons.push(label); }
+                });
+            });
+
+            // Also consider 19/20 final totals for Highest/Lowest Total
+            if (configs['1920'] && configs['1920'].finalTotals) {
+                const mgrs = configs['1920'].managers.map(normalizeName);
+                configs['1920'].finalTotals.forEach((t, c) => {
+                    if (t > highestTotal.score) highestTotal = { score: t, holders: [mgrs[c]], seasons: ['19/20'] };
+                    else if (t === highestTotal.score) { highestTotal.holders.push(mgrs[c]); if (!highestTotal.seasons.includes('19/20')) highestTotal.seasons.push('19/20'); }
+                    if (t > 0 && t < lowestTotal.score) lowestTotal = { score: t, holders: [mgrs[c]], seasons: ['19/20'] };
+                    else if (t === lowestTotal.score) { lowestTotal.holders.push(mgrs[c]); if (!lowestTotal.seasons.includes('19/20')) lowestTotal.seasons.push('19/20'); }
+                });
+            }
+
+            const fmt = (o) => ({
+                holder: [...new Set(o.holders)].join(', '),
+                score: String(o.score),
+                season: [...new Set(o.seasons)].join(', ')
+            });
+
+            return [
+                { record: "Highest GW", ...fmt(highestGW) },
+                { record: "Lowest GW", ...fmt(lowestGW) },
+                { record: "Most GW Wins", ...fmt(mostWins) },
+                { record: "Most GW Losses", ...fmt(mostLosses) },
+                { record: "Least GW Wins", ...fmt(leastWins) },
+                { record: "Highest MoTM", ...fmt(highestMoTM) },
+                { record: "Lowest MoTM", ...fmt(lowestMoTM) },
+                { record: "Most MoTM", ...fmt(mostMoTM) },
+                { record: "Highest Total", ...fmt(highestTotal) },
+                { record: "Lowest Total", ...fmt(lowestTotal) },
+                ...manualSingleSeasonRecords
+            ];
+        }
 
         function renderSingleSeasonRecords() {
             const tbody = document.getElementById('singleSeasonBody');
             if (!tbody) return;
             tbody.innerHTML = '';
-            defaultSingleSeasonRecords.forEach((row) => {
+            computeSingleSeasonRecords().forEach((row) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td style="text-align:left; font-weight:bold; color:#f8fafc;">${escapeHtml(row.record)}</td>
