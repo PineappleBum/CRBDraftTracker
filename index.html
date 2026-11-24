@@ -1376,6 +1376,244 @@
         // Initialize default view
         switchTab('2627');
 
+// =====================================================================
+// CUP ADD-ON - League / Cup tabs for any season you give cup data to
+//
+// Only seasons listed in CUP_SEASONS below get the League | Cup buttons.
+// Every other season (all the previous ones) is left exactly as it is.
+// =====================================================================
+(function () {
+
+    // ---------------------------------------------------------------
+    // 1. CUP DATA - one entry per season that has cups
+    //
+    // * The key is the season tab's id: the part after "tab-" in that
+    // tab's button (tab-2627 is '2627', tab-2728 is '2728').
+    // * Only seasons listed here get the League | Cup buttons.
+    // * Each season has its own competitions. Give a competition a bracket
+    // object to show it, or null to show "No data yet". You can add,
+    // remove or rename competitions for each season.
+    // * legs = [leg 1, leg 2]; use null for a leg not played yet.
+    // star: true adds a gold star next to a team.
+    // * Each round should have half as many ties as the one before it
+    // (8 teams = 4 + 2 + 1, 16 teams = 8 + 4 + 2 + 1, and so on).
+    //
+    // TO ADD A FUTURE SEASON: copy the whole '2627' entry, paste it just
+    // below it (put a comma after the closing brace of the one above), then
+    // change the key (e.g. '2728') and swap in that season's cup data.
+    // ---------------------------------------------------------------
+    const CUP_SEASONS = {
+
+        '2627': {
+            'League Cup': {
+                subtitle: 'Runs from GW 9 to GW 14 (two-legged ties)',
+                rounds: [
+                    { name: 'Quarter-finals', gws: 'GW 9 & 10', ties: [
+                        { a: { team: 'Team Nog', mgr: 'Michael Norris', star: true, legs: [45, 28] },
+                          b: { team: 'Le Saux Solid Crew', mgr: 'Chris Richards', legs: [38, 61] } },
+                        { a: { team: 'CrazyNdlovu', mgr: 'Max Barnard', legs: [46, 60] },
+                          b: { team: 'Wales', mgr: 'Ed Roberts', legs: [30, 23] } },
+                        { a: { team: 'Papa Lloyd’s Wives', mgr: 'Nicholas Lloyd', legs: [41, 32] },
+                          b: { team: 'Aston Thrillerus', mgr: 'Chris Mitchell', legs: [35, 77] } },
+                        { a: { team: 'Schrute Farms F.C.', mgr: 'Michael Hooper', legs: [60, 35] },
+                          b: { team: 'Torp of the League', mgr: 'Paul Rodney Sant', legs: [51, 53] } }
+                    ]},
+                    { name: 'Semi-finals', gws: 'GW 11 & 12', ties: [
+                        { a: { team: 'Le Saux Solid Crew', mgr: 'Chris Richards', legs: [36, null] },
+                          b: { team: 'CrazyNdlovu', mgr: 'Max Barnard', star: true, legs: [34, null] },
+                          note: 'Leg 2: GW 12' },
+                        { a: { team: 'Aston Thrillerus', mgr: 'Chris Mitchell', legs: [26, null] },
+                          b: { team: 'Torp of the League', mgr: 'Paul Rodney Sant', legs: [45, null] },
+                          note: 'Leg 2: GW 12' }
+                    ]},
+                    { name: 'Final', gws: 'GW 13 & 14', ties: [
+                        { a: { placeholder: 'Winner of SF 1' }, b: { placeholder: 'Winner of SF 2' } }
+                    ]}
+                ]
+            },
+            'FA Cup': null,
+            'Champions League': null
+        }
+
+        // , '2728': { ... } <- next season goes here
+
+    };
+
+    // ---------------------------------------------------------------
+    // 2. STYLES (injected automatically, all class names start with lc-)
+    // ---------------------------------------------------------------
+    const css = `
+        .lc-subtabs { display: flex; gap: 5px; background-color: #1e293b; padding: 5px; border-radius: 8px; margin: 0 auto 15px; width: 100%; max-width: 420px; box-sizing: border-box; }
+        .lc-btn { flex: 1; background-color: transparent; color: #94a3b8; border: none; padding: 9px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.95rem; transition: all 0.2s; }
+        .lc-btn:hover { color: #cbd5e1; background-color: #334155; }
+        .lc-btn.active { background-color: #3b82f6; color: white; }
+
+        .lc-cup { width: 100%; max-width: 1200px; }
+        .lc-section { width: 100%; margin-bottom: 26px; }
+        .lc-section h3 { color: #e2e8f0; margin: 0 0 2px; font-size: 1.15rem; text-align: left; border-left: 4px solid #3b82f6; padding-left: 10px; }
+        .lc-sub { color: #94a3b8; font-size: 0.8rem; margin: 0 0 14px 14px; }
+        .lc-empty { background-color: #1e293b; border: 1px dashed #334155; color: #94a3b8; border-radius: 8px; padding: 18px; text-align: center; font-size: 0.9rem; }
+
+        .lc-scroll { overflow-x: auto; padding-bottom: 6px; }
+        .lc-bracket { display: grid; column-gap: 28px; } /* columns, rows and width are set per bracket in bracketHTML */
+        .lc-head { padding: 0 2px 10px; }
+        .lc-head .rn { color: #e2e8f0; font-weight: bold; font-size: 0.95rem; }
+        .lc-head .rg { color: #94a3b8; font-size: 0.75rem; }
+
+        .lc-slot { position: relative; display: flex; align-items: center; }
+        .lc-slot > .lc-tie { width: 100%; }
+        .lc-slot.feed-top::after, .lc-slot.feed-bottom::after { content: ''; position: absolute; right: -14px; width: 14px; border: 0 solid #475569; }
+        .lc-slot.feed-top::after { top: 50%; bottom: 0; border-top-width: 2px; border-right-width: 2px; }
+        .lc-slot.feed-bottom::after { top: 0; bottom: 50%; border-bottom-width: 2px; border-right-width: 2px; }
+        .lc-slot.fed::before { content: ''; position: absolute; left: -14px; top: 50%; width: 14px; border-top: 2px solid #475569; }
+
+        .lc-tie { background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; overflow: hidden; }
+        .lc-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 10px; }
+        .lc-row + .lc-row { border-top: 1px solid #334155; }
+        .lc-team { flex: 1; min-width: 0; }
+        .lc-name { display: flex; align-items: center; gap: 4px; font-weight: bold; font-size: 0.88rem; color: #f1f5f9; }
+        .lc-name .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+        .lc-star { color: #facc15; flex-shrink: 0; }
+        .lc-tick { color: #4ade80; font-size: 0.8rem; flex-shrink: 0; }
+        .lc-mgr { font-size: 0.72rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .lc-row.lost .lc-name { color: #94a3b8; font-weight: 600; }
+        .lc-scores { display: flex; align-items: center; gap: 8px; flex-shrink: 0; color: #94a3b8; font-size: 0.8rem; }
+        .lc-total { min-width: 34px; text-align: center; padding: 2px 8px; border-radius: 999px; font-weight: bold; font-size: 0.9rem; color: #f1f5f9; }
+        .lc-total.won { background-color: #16a34a; color: #fff; }
+        .lc-total.lost { background-color: #334155; color: #94a3b8; }
+        .lc-total.live { border: 1px solid #4ade80; color: #4ade80; }
+        .lc-row.placeholder { color: #94a3b8; font-style: italic; font-size: 0.88rem; padding: 11px 10px; }
+        .lc-foot { padding: 5px 10px; font-size: 0.72rem; color: #94a3b8; background-color: #172033; border-top: 1px solid #334155; }
+        .lc-key { display: flex; align-items: center; gap: 10px; font-size: 0.78rem; color: #94a3b8; margin-top: 14px; flex-wrap: wrap; }
+        .lc-key .lc-total { min-width: 0; padding: 2px 10px; font-size: 0.75rem; }
+    `;
+    const styleEl = document.createElement('style');
+    styleEl.textContent = css;
+    document.head.appendChild(styleEl);
+
+    // ---------------------------------------------------------------
+    // 3. RENDERING
+    // ---------------------------------------------------------------
+    function total(side) {
+        if (!side.legs) return null;
+        const played = side.legs.filter(v => v !== null && v !== undefined);
+        return played.length ? played.reduce((x, y) => x + y, 0) : null;
+    }
+
+    function rowHTML(side, state) {
+        if (side.placeholder) {
+            return `<div class="lc-row placeholder"><span>${side.placeholder}</span><span>—</span></div>`;
+        }
+        const t = total(side);
+        const legs = side.legs.map(v => `<span>${(v === null || v === undefined) ? '–' : v}</span>`).join('');
+        const totalClass = state === 'won' ? 'won' : state === 'lost' ? 'lost' : '';
+        return `<div class="lc-row ${state}">
+            <div class="lc-team">
+                <div class="lc-name" title="${side.team}"><span class="nm">${side.team}</span>${side.star ? '<span class="lc-star">★</span>' : ''}${state === 'won' ? '<span class="lc-tick">✓</span>' : ''}</div>
+                <div class="lc-mgr">${side.mgr}</div>
+            </div>
+            <div class="lc-scores">${legs}<span class="lc-total ${totalClass}">${t === null ? '' : t}</span></div>
+        </div>`;
+    }
+
+    function tieHTML(tie) {
+        const ta = total(tie.a), tb = total(tie.b);
+        // A tie is decided once both legs are in for both sides (and it isn't level)
+        const done = tie.a.legs && tie.b.legs && !tie.a.legs.includes(null) && !tie.b.legs.includes(null) && ta !== tb;
+        let sa = '', sb = '';
+        if (done) { sa = ta > tb ? 'won' : 'lost'; sb = tb > ta ? 'won' : 'lost'; }
+        return `<div class="lc-tie">${rowHTML(tie.a, sa)}${rowHTML(tie.b, sb)}${tie.note ? `<div class="lc-foot">${tie.note}</div>` : ''}</div>`;
+    }
+
+    function bracketHTML(cup) {
+        const nRounds = cup.rounds.length;
+        const nRows = cup.rounds[0].ties.length; // rows = ties in the first round
+        const width = nRounds * 262 + (nRounds - 1) * 28;
+        let html = `<div class="lc-scroll"><div class="lc-bracket" style="grid-template-columns:repeat(${nRounds}, 262px); grid-template-rows:auto repeat(${nRows}, 118px); min-width:${width}px;">`;
+        cup.rounds.forEach((round, r) => {
+            html += `<div class="lc-head" style="grid-column:${r + 1}; grid-row:1;"><div class="rn">${round.name}</div><div class="rg">${round.gws}</div></div>`;
+            const span = nRows / round.ties.length;
+            round.ties.forEach((tie, i) => {
+                let cls = 'lc-slot';
+                if (r > 0) cls += ' fed';
+                if (r < cup.rounds.length - 1) cls += (i % 2 === 0) ? ' feed-top' : ' feed-bottom';
+                html += `<div class="${cls}" style="grid-column:${r + 1}; grid-row:${2 + i * span} / span ${span};">${tieHTML(tie)}</div>`;
+            });
+        });
+        html += '</div></div>';
+        html += `<div class="lc-key">Key <span class="lc-total won">Won</span> <span class="lc-total lost">Lost</span> <span class="lc-total live">Live</span> <span>To play</span></div>`;
+        return html;
+    }
+
+    function sectionHTML(title, cup) {
+        return `<div class="lc-section">
+            <h3>${title}</h3>
+            ${cup ? `<div class="lc-sub">${cup.subtitle || ''}</div>${bracketHTML(cup)}` : '<div class="lc-empty">No data yet</div>'}
+        </div>`;
+    }
+
+    function cupHTML(seasonId) {
+        const comps = CUP_SEASONS[seasonId] || {};
+        return Object.keys(comps).map(name => sectionHTML(name, comps[name])).join('');
+    }
+
+    // ---------------------------------------------------------------
+    // 4. WIRING - adds League | Cup buttons on seasons listed in CUP_SEASONS
+    // ---------------------------------------------------------------
+    let currentSeason = null;
+    const leagueEl = document.getElementById('tracker-content'); // your existing League view
+    if (!leagueEl || typeof switchTab !== 'function') {
+        console.warn('Cup add-on: paste it at the bottom of your script section, after switchTab is defined.');
+        return;
+    }
+
+    const bar = document.createElement('div');
+    bar.className = 'lc-subtabs';
+    bar.style.display = 'none';
+    bar.innerHTML = '<button class="lc-btn active" data-view="league">League</button><button class="lc-btn" data-view="cup">Cup</button>';
+
+    const cupEl = document.createElement('div');
+    cupEl.className = 'lc-cup';
+    cupEl.style.display = 'none';
+
+    leagueEl.parentNode.insertBefore(bar, leagueEl);
+    leagueEl.parentNode.insertBefore(cupEl, leagueEl.nextSibling);
+
+    function showView(view) {
+        bar.querySelectorAll('.lc-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+        if (view === 'cup') {
+            leagueEl.style.display = 'none';
+            cupEl.innerHTML = cupHTML(currentSeason);
+            cupEl.style.display = 'block';
+        } else {
+            cupEl.style.display = 'none';
+            leagueEl.style.display = 'block';
+        }
+    }
+    bar.addEventListener('click', e => {
+        const b = e.target.closest('.lc-btn');
+        if (b) showView(b.dataset.view);
+    });
+
+    function sync(tabId) {
+        currentSeason = tabId;
+        if (CUP_SEASONS[tabId]) { bar.style.display = 'flex'; showView('league'); } // League is the default
+        else { bar.style.display = 'none'; cupEl.style.display = 'none'; } // no cup data: season untouched
+    }
+
+    // Run after your own switchTab, so your existing code is untouched
+    const originalSwitchTab = switchTab;
+    switchTab = function (tabId) {
+        originalSwitchTab.apply(this, arguments);
+        sync(tabId);
+    };
+
+    // If 26/27 is already showing when this loads, set it up now
+    const active = document.querySelector('.tab-btn.active');
+    if (active) sync(active.id.replace('tab-', ''));
+
+})();
+
     </script>
 </body>
 </html>
